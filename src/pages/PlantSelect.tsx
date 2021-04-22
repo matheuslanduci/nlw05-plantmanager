@@ -8,6 +8,7 @@ import {
   ActivityIndicator
 } from "react-native";
 import { EnvironmentButton } from "../components/EnvironmentButton";
+import { useNavigation } from "@react-navigation/core";
 
 import { Header } from "../components/Header";
 import { Load } from "../components/Load";
@@ -18,22 +19,11 @@ import { api } from "../services/api";
 import colors from "../styles/colors";
 import fonts from "../styles/fonts";
 
+import { PlantProps } from "../libs/storage";
+
 interface EnvironmentProps {
   key: string;
   title: string;
-}
-
-interface PlantProps {
-  id: number;
-  name: string;
-  about: string;
-  water_tips: string;
-  photo: string;
-  environments: string[];
-  frequency: {
-    times: number;
-    repeat_every: "week" | "day";
-  };
 }
 
 export function PlantSelect() {
@@ -45,7 +35,8 @@ export function PlantSelect() {
 
   const [page, setPage] = useState<number>(1);
   const [loadingMore, setLoadingMore] = useState<boolean>(false);
-  const [loadedlAll, setLoadedAll] = useState<boolean>(false);
+
+  const navigation = useNavigation();
 
   function handleOnPressEnvironmentButton(key: string) {
     setActiveEnvironment(key);
@@ -67,6 +58,10 @@ export function PlantSelect() {
     setLoadingMore(true);
     setPage(previousValue => previousValue + 1);
     fetchPlants();
+  }
+
+  function handleSelectPlant(plant: PlantProps) {
+    navigation.navigate("PlantSave", { plant });
   }
 
   async function fetchPlants() {
@@ -147,11 +142,12 @@ export function PlantSelect() {
           data={filteredPlants}
           renderItem={({ item }) => (
             <PlantCardPrimary
-              key={item.id}
+              key={String(item.id)}
               data={{
                 name: item.name,
                 photo: item.photo
               }}
+              onPress={() => handleSelectPlant(item)}
             />
           )}
           showsVerticalScrollIndicator={false}

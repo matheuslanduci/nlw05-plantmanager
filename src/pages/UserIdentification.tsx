@@ -1,4 +1,3 @@
-import { useNavigation } from "@react-navigation/core";
 import React, { useState } from "react";
 import {
   SafeAreaView,
@@ -10,8 +9,11 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
+  Alert,
   ToastAndroid
 } from "react-native";
+import { useNavigation } from "@react-navigation/core";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { Button } from "../components/Button";
 
@@ -24,11 +26,28 @@ export function UserIdentification() {
   const [name, setName] = useState<string>("");
   const navigation = useNavigation();
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (isFilled) {
-      navigation.navigate("Confirmation");
+      try {
+        await AsyncStorage.setItem("@plantmanager:user", name);
+
+        navigation.navigate("Confirmation", {
+          title: "Prontinho",
+          subtitle:
+            "Agora vamos começar a cuidar das suas plantinhas com muito cuidado.",
+          buttonTitle: "Começar",
+          icon: "smile",
+          nextScreen: "PlantSelect"
+        });
+      } catch {
+        Alert.alert("Houve um erro na aplicação.");
+      }
     } else {
-      ToastAndroid.show("Insira um nome, por favor.", ToastAndroid.SHORT);
+      if (Platform.OS === "android") {
+        ToastAndroid.show("Informe seu nome, por favor.", ToastAndroid.SHORT);
+      } else {
+        Alert.alert("Informe seu nome, por favor.");
+      }
     }
   }
 
@@ -40,7 +59,7 @@ export function UserIdentification() {
     setIsFocused(true);
   }
 
-  function handleInputChange(value: string) {    
+  function handleInputChange(value: string) {
     setIsFilled(!!value);
     setName(value);
   }
